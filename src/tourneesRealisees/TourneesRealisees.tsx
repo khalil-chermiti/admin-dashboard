@@ -68,7 +68,7 @@ export const TourneesRealisees = () => {
         querySnapshot.docs.map((doc) => {
           const currentTournee = doc.data() as TourneeRealisee;
           currentTournee.images = [];
-          currentTournee.id = doc.id;
+          currentTournee.id = doc.data().id;
           setTourneesRealisees((prev) => [...prev, currentTournee]);
         });
       }
@@ -82,7 +82,9 @@ export const TourneesRealisees = () => {
 
         setTourneesRealisees((prev) => {
           const newTournees = prev.map((tournee) => {
+            console.log(tournee);
             if (tournee.id === currentImage.tourneeId) {
+              console.log("bingo");
               return {
                 ...tournee,
                 images: [...tournee.images, currentImage.imageUrl],

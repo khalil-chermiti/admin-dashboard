@@ -91,14 +91,7 @@ function App() {
             </RoleGuard>
           }
         />
-        <Route
-          path="/tournees/realisees"
-          element={
-            <RoleGuard role="superviseur">
-              <TourneesRealisees />
-            </RoleGuard>
-          }
-        />
+        <Route path="/tournees/realisees" element={<TourneesRealisees />} />
         <Route
           path="/tracking"
           element={
