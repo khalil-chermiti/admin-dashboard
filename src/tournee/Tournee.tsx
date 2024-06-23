@@ -4,20 +4,8 @@ import { AuthContext } from "../auth/AuthContext";
 import { databaseClient } from "../firebaseConfig";
 import { Agent, AgentDocument } from "../agents/types";
 import { useContext, useEffect, useState } from "react";
-import {
-  addDoc,
-  arrayUnion,
-  collection,
-  doc,
-  getDoc,
-  updateDoc,
-} from "firebase/firestore";
-import {
-  APIProvider,
-  AdvancedMarker,
-  Map,
-  Pin,
-} from "@vis.gl/react-google-maps";
+import { addDoc, arrayUnion, collection, doc, getDoc, updateDoc } from "firebase/firestore";
+import { APIProvider, AdvancedMarker, Map, Pin } from "@vis.gl/react-google-maps";
 import { Camion, CamionDocument } from "../camions/type";
 import { PointDeCollect } from "../CentreDeDepot/types";
 import { useNavigate } from "react-router-dom";
@@ -26,8 +14,7 @@ export const Tournee = () => {
   const navigate = useNavigate();
   const [agents, setAgents] = useState<AgentDocument[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string>("");
-  const [selectedCamionMatricule, setSelectedCamionMatricule] =
-    useState<string>("");
+  const [selectedCamionMatricule, setSelectedCamionMatricule] = useState<string>("");
 
   const [agentName, setAgentName] = useState<string>("");
 
@@ -39,6 +26,10 @@ export const Tournee = () => {
       lng: number;
     }[]
   >([]);
+
+  useEffect(() => {
+    console.log("collectionPoints", collectionPoints);
+  }, [collectionPoints]);
 
   const [centresDeDepots, setCentresDeDepots] = useState<PointDeCollect[]>([]);
 
@@ -152,19 +143,19 @@ export const Tournee = () => {
           Choisir les agents
         </p>
         <Form.Select
-          onChange={(e) => {
+          onChange={e => {
             if (e.target.value === "Choisir un agent") {
               return;
             }
-            setSelectedAgentId(
-              agents.find((agent) => agent.nom === e.target.value)?.id || "",
-            );
+            setSelectedAgentId(agents.find(agent => agent.nom === e.target.value)?.id || "");
             setAgentName(e.target.value);
           }}
           size="sm"
         >
           <option selected>Choisir un agent</option>
-          {agents?.map((agent) => <option>{agent.nom}</option>)}
+          {agents?.map(agent => (
+            <option>{agent.nom}</option>
+          ))}
         </Form.Select>
 
         <p
@@ -176,19 +167,18 @@ export const Tournee = () => {
           Choisir un camion
         </p>
         <Form.Select
-          onChange={(e) => {
+          onChange={e => {
             if (e.target.value === "Choisir un camion") {
               return;
             }
-            setSelectedCamionMatricule(
-              camions.find((camion) => camion.matricule === e.target.value)
-                ?.matricule || "",
-            );
+            setSelectedCamionMatricule(camions.find(camion => camion.matricule === e.target.value)?.matricule || "");
           }}
           size="sm"
         >
           <option selected>Choisir un camion</option>
-          {camions?.map((camion) => <option>{camion.matricule}</option>)}
+          {camions?.map(camion => (
+            <option>{camion.matricule}</option>
+          ))}
         </Form.Select>
       </div>
       <div
@@ -242,22 +232,12 @@ const GoogleMapVisgl: React.FC<{
 }> = ({ pointsDeCollect, setPointsDeCollect, centresDeDepots }) => {
   const defaultCenter = { lat: 36.742173, lng: 10.036566 };
 
-  const addCollectionPoint = (collectionPoint: {
-    lat: number;
-    lng: number;
-  }) => {
+  const addCollectionPoint = (collectionPoint: { lat: number; lng: number }) => {
     setPointsDeCollect([...pointsDeCollect, collectionPoint]);
   };
 
-  const removeCollectionPoint = (collectionPoint: {
-    lat: number;
-    lng: number;
-  }) => {
-    setPointsDeCollect(
-      pointsDeCollect.filter(
-        (p) => p.lat !== collectionPoint.lat && p.lng !== collectionPoint.lng,
-      ),
-    );
+  const removeCollectionPoint = (collectionPoint: { lat: number; lng: number }) => {
+    setPointsDeCollect(pointsDeCollect.filter(p => p.lat !== collectionPoint.lat && p.lng !== collectionPoint.lng));
   };
 
   return (
@@ -270,7 +250,8 @@ const GoogleMapVisgl: React.FC<{
         disableDefaultUI={true}
         mapId={"someId"}
         mapTypeId="hybrid"
-        onClick={(e) => {
+        onClick={e => {
+          console.log(e);
           if (e.detail.latLng)
             addCollectionPoint({
               lat: e.detail.latLng?.lat,
@@ -291,15 +272,8 @@ const GoogleMapVisgl: React.FC<{
         ))}
 
         {centresDeDepots?.map((point, index) => (
-          <AdvancedMarker
-            key={index}
-            position={{ lat: point.lat, lng: point.lng }}
-          >
-            <Pin
-              background={"#0f9d58"}
-              borderColor={"#006425"}
-              glyphColor={"#60d98f"}
-            />
+          <AdvancedMarker key={index} position={{ lat: point.lat, lng: point.lng }}>
+            <Pin background={"#0f9d58"} borderColor={"#006425"} glyphColor={"#60d98f"} />
           </AdvancedMarker>
         ))}
       </Map>

@@ -1,24 +1,9 @@
 import { CiUser } from "react-icons/ci";
 import { useEffect, useState } from "react";
 import { databaseClient } from "../firebaseConfig";
-import {
-  Button,
-  Card,
-  Col,
-  Container,
-  Form,
-  Modal,
-  Row,
-} from "react-bootstrap";
+import { Button, Card, Col, Container, Form, Modal, Row } from "react-bootstrap";
 
-import {
-  collection,
-  deleteDoc,
-  getDocs,
-  query,
-  setDoc,
-  where,
-} from "firebase/firestore";
+import { collection, deleteDoc, getDocs, query, setDoc, where } from "firebase/firestore";
 
 import { MdDelete, MdUpdate } from "react-icons/md";
 import toast from "react-hot-toast";
@@ -32,6 +17,7 @@ type UserDocument = {
     nom: string;
   };
   role?: string;
+  password?: string;
 };
 
 export const UsersPage = () => {
@@ -48,14 +34,14 @@ export const UsersPage = () => {
 
     const querySnapshot = await getDocs(usersQuery);
 
-    let document = querySnapshot.docs.map((doc) => {
+    let document = querySnapshot.docs.map(doc => {
       return {
         id: doc.data().id,
         ...doc.data(),
       };
     }) as UserDocument[];
 
-    document = document.filter((doc) => doc.role !== "admin");
+    document = document.filter(doc => doc.role !== "admin");
 
     console.log("document : ", document);
 
@@ -94,17 +80,7 @@ export const UsersPage = () => {
         <Modal.Header closeButton>
           <Modal.Title>Modider Utilisateur</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          {selectedAgent && (
-            <UpdateUser
-              nom={selectedAgent.nom}
-              prenom={selectedAgent.prenom}
-              id={selectedAgent.id}
-              password=""
-              ville={selectedAgent.ville.nom}
-            />
-          )}
-        </Modal.Body>
+        <Modal.Body>{selectedAgent && <UpdateUser user={selectedAgent} />}</Modal.Body>
       </Modal>
       <Container>
         <h3 className="mt-3">List Of Users</h3>
@@ -117,9 +93,7 @@ export const UsersPage = () => {
                     <CiUser size={35} className="m-1" />
 
                     <Card.Title>nom: {user.nom}</Card.Title>
-                    <Card.Subtitle className="mb-2 text-muted">
-                      prenom: {user.prenom}
-                    </Card.Subtitle>
+                    <Card.Subtitle className="mb-2 text-muted">prenom: {user.prenom}</Card.Subtitle>
                     <Card.Text>
                       <div>ville: {user.ville.nom.toString()}</div>
                     </Card.Text>
@@ -130,15 +104,7 @@ export const UsersPage = () => {
                       cursor="pointer"
                       color="blue"
                       onClick={() => {
-                        setSelectedAgent({
-                          id: user.id,
-                          nom: user.nom,
-                          prenom: user.prenom,
-                          email: "",
-                          ville: {
-                            nom: user.ville.nom,
-                          },
-                        });
+                        setSelectedAgent(user);
                         handleShow();
                       }}
                     />
@@ -164,20 +130,12 @@ export const UsersPage = () => {
 };
 
 type UpdateUserProps = {
-  id: string;
-  nom: string;
-  prenom: string;
-  password: string;
-  ville: string;
+  user: UserDocument;
 };
 
-const UpdateUser: React.FC<UpdateUserProps> = ({
-  nom,
-  prenom,
-  id,
-  password,
-  ville,
-}) => {
+const UpdateUser: React.FC<UpdateUserProps> = ({ user }) => {
+  const { nom, prenom, id, password, ville, email } = user;
+
   const [input, setInput] = useState({
     nom,
     prenom,
@@ -196,7 +154,7 @@ const UpdateUser: React.FC<UpdateUserProps> = ({
   const handleSubmit = async () => {
     // save user to firebase auth
     try {
-      const user: {
+      const usernew: {
         nom: string;
         prenom: string;
         ville: {
@@ -206,7 +164,7 @@ const UpdateUser: React.FC<UpdateUserProps> = ({
         nom: input.nom,
         prenom: input.prenom,
         ville: {
-          nom: input.ville,
+          nom: input.ville.nom,
         },
       };
 
@@ -218,9 +176,9 @@ const UpdateUser: React.FC<UpdateUserProps> = ({
 
       // if document is found update it
       if (doc) {
-        console.log("data : ", doc.data());
         await setDoc(doc.ref, {
           ...user,
+          ...usernew,
         });
         location.reload();
         toast.success("Utilisateur mis a jour  avec succès");
@@ -242,29 +200,15 @@ const UpdateUser: React.FC<UpdateUserProps> = ({
       >
         <Form.Group className="mb-3" controlId="nom">
           <Form.Label>First name</Form.Label>
-          <Form.Control
-            id="nom"
-            placeholder={nom}
-            onChange={handleChange}
-            type="text"
-          />
+          <Form.Control id="nom" placeholder={nom} onChange={handleChange} type="text" />
         </Form.Group>
         <Form.Group className="mb-3" controlId="prenom">
           <Form.Label>Last name</Form.Label>
-          <Form.Control
-            id="prenom"
-            placeholder={prenom}
-            onChange={handleChange}
-            type="text"
-          />
+          <Form.Control id="prenom" placeholder={prenom} onChange={handleChange} type="text" />
         </Form.Group>
         <Form.Group controlId="ville" className="mb-3">
           <Form.Label>City</Form.Label>
-          <Form.Control
-            placeholder={ville}
-            onChange={handleChange}
-            type="text"
-          />
+          <Form.Control placeholder={ville.nom} onChange={handleChange} type="text" />
         </Form.Group>
 
         <Form.Group className="mb-3" controlId="email">
